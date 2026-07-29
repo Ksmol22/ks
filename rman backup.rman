@@ -1,0 +1,37 @@
+-- rman_backup.rman
+-- Backup diario (full) + archivelogs + limpieza de obsoletos
+-- Ventana de recuperación: 3 días (ya configurada previamente)
+
+CONNECT TARGET /
+CONNECT CATALOG RMAN_USER/RMAN_PASSWORD@CATALOG_TNS
+
+RUN {
+    ALLOCATE CHANNEL ch1 DEVICE TYPE DISK;
+    ALLOCATE CHANNEL ch2 DEVICE TYPE DISK;
+
+    -- Backup full diario de la base
+    BACKUP AS COMPRESSED BACKUPSET
+        INCREMENTAL LEVEL 0
+        DATABASE
+        FORMAT '/u01/backup/%d/full_%d_%T_%s_%p.bkp'
+        TAG 'DAILY_FULL';
+
+    -- Backup de archivelogs no respaldados (y limpieza del origen)
+    BACKUP ARCHIVELOG ALL
+        NOT BACKED UP 1 TIMES
+        FORMAT '/u01/backup/%d/arch_%d_%T_%s_%p.bkp'
+        DELETE INPUT;
+
+    -- Backup del control file y spfile
+    BACKUP CURRENT CONTROLFILE
+        FORMAT '/u01/backup/%d/ctl_%d_%T_%s_%p.bkp';
+
+    RELEASE CHANNEL ch1;
+    RELEASE CHANNEL ch2;
+}
+
+-- Limpieza según la política de retención (recovery window 3 días)
+REPORT OBSOLETE;
+DELETE NOPROMPT OBSOLETE;
+
+EXIT;
