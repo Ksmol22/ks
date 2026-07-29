@@ -1,0 +1,28 @@
+-- rman_archivelog_cleanup.rman
+-- Objetivo: evitar que el destino de archivelogs se llene y detenga la base.
+-- Pensado para correr con más frecuencia que el backup diario (ej. cada hora).
+
+CONNECT TARGET /
+CONNECT CATALOG RMAN_USER/RMAN_PASSWORD@CATALOG_TNS
+
+-- Solo permite borrar archivelogs que ya fueron respaldados al menos 1 vez a disco
+CONFIGURE ARCHIVELOG DELETION POLICY TO BACKED UP 1 TIMES TO DISK;
+
+RUN {
+    ALLOCATE CHANNEL ch1 DEVICE TYPE DISK;
+
+    -- Respalda cualquier archivelog que aún no se haya respaldado
+    -- y borra el original inmediatamente (libera espacio en el destino ya)
+    BACKUP ARCHIVELOG ALL
+        NOT BACKED UP 1 TIMES
+        FORMAT '/u01/backup/%d/arch_%d_%T_%s_%p.bkp'
+        DELETE INPUT;
+
+    RELEASE CHANNEL ch1;
+}
+
+-- Red de seguridad: borra archivelogs de más de 3 días que YA cumplen
+-- la política de borrado (ya fueron respaldados). No toca los que no lo estén.
+DELETE NOPROMPT ARCHIVELOG ALL COMPLETED BEFORE 'SYSDATE-3';
+
+EXIT;
