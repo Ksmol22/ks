@@ -10,3 +10,43 @@ SELECT grantee, 'OBJETO', privilege, owner||'.'||table_name
   FROM dba_tab_privs
  WHERE grantee IN (SELECT username FROM dba_users WHERE oracle_maintained='N')
  ORDER BY 1, 2, 3;
+
+
+WITH info AS (
+  SELECT SYS_CONTEXT('USERENV','SERVER_HOST') servidor,
+         SYS_CONTEXT('USERENV','DB_NAME')     base_datos,
+         SYS_CONTEXT('USERENV','CON_NAME')    contenedor,
+         (SELECT version FROM v$instance)     version
+    FROM dual
+),
+usr AS (
+  SELECT username, account_status, created, profile
+    FROM dba_users
+   WHERE oracle_maintained = 'N'
+),
+perms AS (
+  SELECT grantee usuario, 'ROL' tipo_permiso, granted_role privilegio,
+         CAST(NULL AS VARCHAR2(260)) objeto, admin_option opcion_admin
+    FROM dba_role_privs WHERE grantee IN (SELECT username FROM usr)
+  UNION ALL
+  SELECT grantee, 'SISTEMA', privilege,
+         CAST(NULL AS VARCHAR2(260)), admin_option
+    FROM dba_sys_privs WHERE grantee IN (SELECT username FROM usr)
+  UNION ALL
+  SELECT grantee, 'OBJETO', privilege,
+         owner||'.'||table_name, grantable
+    FROM dba_tab_privs WHERE grantee IN (SELECT username FROM usr)
+)
+SELECT i.servidor, i.base_datos, i.contenedor, i.version,
+       u.username        AS usuario,
+       u.account_status  AS estado_cuenta,
+       u.created         AS fecha_creacion,
+       u.profile         AS perfil,
+       p.tipo_permiso,
+       p.privilegio,
+       p.objeto,
+       p.opcion_admin
+  FROM info i
+ CROSS JOIN usr u
+  LEFT JOIN perms p ON p.usuario = u.username
+ ORDER BY u.username, p.tipo_permiso, p.privilegio;
