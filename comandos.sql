@@ -39,3 +39,11 @@ mkdir E:\pgmig
 & "C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -p 5433 -W -c "SHOW lc_collate;"
 
 & "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -p 5435 -W -c "SHOW lc_collate;"
+
+-- Diagnostico 
+
+Get-Service postgresql-x64-18
+netstat -ano | findstr :543
+Get-ChildItem E:\PostgreSQL\18\data | Select -First 10
+
+Get-ChildItem E:\PostgreSQL\18\data\log | Sort LastWriteTime | Select -Last 1 | Get-Content -Tail 30
