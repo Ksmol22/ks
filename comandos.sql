@@ -18,3 +18,19 @@ FROM pg_stat_database WHERE datname NOT LIKE 'template%';
 Get-PSDrive -PSProvider FileSystem
 "C:\PostgreSQL\data\pg10","C:\Program Files\PostgreSQL\14\data","C:\Program Files\PostgreSQL\17\data" | % {
   "{0}  {1:N1} GB" -f $_, ((gci $_ -Recurse -File -ea 0 | measure Length -Sum).Sum/1GB) }
+
+
+  -- Plan
+
+
+  Get-Volume -DriveLetter E
+
+  $b = "C:\Program Files\PostgreSQL\18\bin"
+mkdir E:\pgmig
+& "$b\pg_dumpall.exe" -U postgres -p 5433 --globals-only -f E:\pgmig\globals_14.sql
+& "$b\pg_dump.exe" -U postgres -p 5433 -Fd -j 4 -d "BSNC-Provisiones" -f E:\pgmig\provisiones_14
+
+
+& "$b\psql.exe" -U postgres -p 5435 -f E:\pgmig\globals_14.sql
+& "$b\createdb.exe" -U postgres -p 5435 "BSNC-Provisiones"
+& "$b\pg_restore.exe" -U postgres -p 5435 -j 4 -d "BSNC-Provisiones" E:\pgmig\provisiones_14
