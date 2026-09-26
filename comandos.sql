@@ -37,3 +37,5 @@ mkdir E:\pgmig
 
 
 & "C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -p 5433 -W -c "SHOW lc_collate;"
+
+& "C:\Program Files\PostgreSQL\18\bin\psql.exe" -U postgres -p 5435 -W -c "SHOW lc_collate;"
