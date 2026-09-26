@@ -34,3 +34,6 @@ mkdir E:\pgmig
 & "$b\psql.exe" -U postgres -p 5435 -f E:\pgmig\globals_14.sql
 & "$b\createdb.exe" -U postgres -p 5435 "BSNC-Provisiones"
 & "$b\pg_restore.exe" -U postgres -p 5435 -j 4 -d "BSNC-Provisiones" E:\pgmig\provisiones_14
+
+
+& "C:\Program Files\PostgreSQL\17\bin\psql.exe" -U postgres -p 5433 -W -c "SHOW lc_collate;"
