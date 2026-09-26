@@ -13,3 +13,8 @@ foreach ($p in 5432,5433,5434) {
 
 SELECT datname, numbackends, xact_commit, stats_reset
 FROM pg_stat_database WHERE datname NOT LIKE 'template%';
+
+
+Get-PSDrive -PSProvider FileSystem
+"C:\PostgreSQL\data\pg10","C:\Program Files\PostgreSQL\14\data","C:\Program Files\PostgreSQL\17\data" | % {
+  "{0}  {1:N1} GB" -f $_, ((gci $_ -Recurse -File -ea 0 | measure Length -Sum).Sum/1GB) }
