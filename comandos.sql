@@ -61,3 +61,16 @@ Add-Content E:\PostgreSQL\18\data\postgresql.conf "`nport = 5440"
 icacls E:\PostgreSQL\18 /grant "NT AUTHORITY\NetworkService:(OI)(CI)F" /T
 & "$b\pg_ctl.exe" register -N postgresql-x64-18 -D E:\PostgreSQL\18\data -S auto -U "NT AUTHORITY\NetworkService"
 Start-Service postgresql-x64-18
+
+
+
+$b = "C:\Program Files\PostgreSQL\18\bin"
+Get-ChildItem E:\PostgreSQL\18\data
+
+& "$b\initdb.exe" -D E:\PostgreSQL\18\data -U postgres -W -E UTF8 --locale=Spanish_Spain.1252
+
+
+Add-Content E:\PostgreSQL\18\data\postgresql.conf "`nport = 5440"
+icacls E:\PostgreSQL\18 /grant "NT AUTHORITY\NetworkService:(OI)(CI)F" /T
+& "$b\pg_ctl.exe" register -N postgresql-x64-18 -D E:\PostgreSQL\18\data -S auto -U "NT AUTHORITY\NetworkService"
+Start-Service postgresql-x64-18
